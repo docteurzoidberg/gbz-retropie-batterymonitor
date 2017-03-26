@@ -26,7 +26,7 @@
 #include <linux/fb.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
-#include <wiringPi.h>
+#include "../debug-Lib/src/Logger.h"
 
 // 'global' variables to store screen info
 char *fbp = 0;
@@ -68,12 +68,12 @@ int batt_fore_colour = 65535;
 int batt_back_colour = 0;
 
 // seconds between checks of the low battery output
-int lbo_refresh = 1;
+// int lbo_refresh = 1;
 // refresh rate of the framebuffer
 int fb_refresh = 10000;
 
 // GPIO pin the low battery output connects too
-int lbo_gpio = 19;
+//int lbo_gpio = 19;
 
 // called when terminating
 void signal_callback_handler(int signum)
@@ -105,7 +105,7 @@ void put_pixel(int x, int y, int c)
 }
 
 // function to draw a battery to the frame buffer
-void draw_battery(start_x, start_y, fore_colour, back_colour) {
+void draw_battery(int start_x, int start_y, int fore_colour, int back_colour) {
     int x;
     int y;
     for (x = 0; x < 20; x++) {
@@ -122,10 +122,6 @@ void draw_battery(start_x, start_y, fore_colour, back_colour) {
 // application entry point
 int main(int argc, char* argv[])
 {
-
-    int low_batt = 0;
-    int count = 0;
-
     printf("Pocket PiGRRL Battery Monitor Running.\n");
 
     // Open the framebuffer file for reading and writing
@@ -170,39 +166,24 @@ int main(int argc, char* argv[])
               fbfd, 
               0);
 
-    if ((int)fbp == -1) {
+    if ( (int)(*fbp) == -1) {
         printf("Failed to mmap.\n");
+        return -1;
     }
-    else {
 
-        // Register signal and signal handler for cleanup
-        signal(SIGINT, signal_callback_handler);
-        signal(SIGTERM, signal_callback_handler);
+    // Register signal and signal handler for cleanup
+    signal(SIGINT, signal_callback_handler);
+    signal(SIGTERM, signal_callback_handler);
 
-        // setup gpio
-        wiringPiSetupGpio();
-        pinMode(lbo_gpio, INPUT);
-        pullUpDnControl(lbo_gpio, PUD_UP);
+    //TODO: drzoid:  serialloop
 
-        // inifinite loop
-        for(;;) {
-            low_batt = digitalRead(lbo_gpio);
-            count = 0;
-            while(low_batt == 0) {
-                // draw battery icon
-                draw_battery(batt_start_x, batt_start_y, batt_fore_colour, batt_back_colour);
-                usleep(fb_refresh);
-                // check for low batt every second
-                if (count > (1000000 / fb_refresh)) {
-                    low_batt = digitalRead(lbo_gpio);
-                    count = 0;
-                }
-                count = count + 1;
-            }
-            sleep(lbo_refresh);
-        }
+    // inifinite loop
+    for(;;) {
+	// draw battery icon
+        draw_battery(batt_start_x, batt_start_y, batt_fore_colour, batt_back_colour);
+        usleep(fb_refresh);
+        sleep(1);
     }
 
     return 0;
-
 }

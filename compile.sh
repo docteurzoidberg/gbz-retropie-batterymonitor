@@ -1,1 +1,1 @@
-g++ -std=c++11 -o grrl_bat_mon grrl_bat_mon.cpp
+g++ -std=c++11 -o gbz-rpi-battmon gbz-rpi-battmon.cpp debug-Lib/src/Logger.cpp

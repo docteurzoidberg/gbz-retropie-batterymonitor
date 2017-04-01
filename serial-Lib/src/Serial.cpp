@@ -1,8 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <stdexcept>
-#include <cstdint>
+#include <cstring>
 
 #include "../../debug-Lib/src/Logger.h"
 
@@ -24,10 +23,15 @@ public:
   }
   
   bool open (std::string path) {
- 	if (!serialStream) {
-      	throw std::run_time("Serial opening error !");
+ 	if (!serialStream) return false;
+    try{
+        serialStream.open(path, std::ifstream::in | std::ifstream::binary);
+        return true;
     }
-    return serialStream.open(path, std::ifstream::in | std::ifstream::binary);
+    catch(std::exception const& e) {
+        
+    }
+    return false;
   }
     
   //lit la stream et rempli le buffer  
@@ -48,7 +52,7 @@ public:
             return false;
         }
 
-        memcpy(obj, &buffer[readIndex], len);
+        std::memcpy(obj, &buffer[readIndex], len);
         readIndex+=len; 
         return true;
   }

@@ -111,13 +111,15 @@ void signal_callback_handler(int signum)
     // cleanup
     // unmap fb file from memory
     munmap(fbp, screensize);
+
     // reset the display mode
     if (ioctl(fbfd, FBIOPUT_VSCREENINFO, &orig_vinfo)) {
-        printf("Error re-setting variable information.\n");
+        Logger::error("Error re-setting variable information.");
     }
+    
     // close fb file
     close(fbfd);
-    printf("Pocket PiGRRL Battery Monitor Finished (%d).\n",signum);
+    Logger::info("Pocket PiGRRL Battery Monitor Finished.");
 
     exit(signum);
 }
@@ -182,7 +184,7 @@ void build_icon() {
     for(int r=batt_icon_level_start_row;r<=batt_icon_level_end_row;r++) {
         for(int c=batt_icon_level_start_col;c<=batt_icon_level_end_col;c++) {
             int cur = (c-batt_icon_level_start_col);
-            batt_icon[r][c] = ( c <= w ? 1 : 0 );
+            batt_icon[r][c] = ( cur <= w ? 1 : 0 );
         }
     }
 
@@ -205,7 +207,7 @@ int main(int argc, char* argv[])
 
     //Open serial protocol lib on arduino serial usb
     if(!serialLib->open("/dev/ttyACM0")) {
-        Logger::error("Error opening serial port");
+        Logger::error("Error opening serial port.");
         return(1);
     }
 

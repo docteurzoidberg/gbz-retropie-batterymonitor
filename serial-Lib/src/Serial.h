@@ -7,6 +7,13 @@
 #define BYTE_END '\n'
 #define TAILLE_BUFFER 512
 
+#include <SerialStream.h>
+#include <iostream>
+#include <unistd.h>
+#include <cstdlib>
+
+using namespace LibSerial;
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -27,6 +34,7 @@
 class Serial {
 public:
     Serial();
+    bool open(std::string path, LibSerial::SerialStreamBuf::BaudRateEnum baudRate);
     bool open(std::string path);
     void close();
     bool processData();
@@ -37,7 +45,7 @@ public:
     ~Serial();
 private:
     void _compute(char &b);   
-    std::ifstream serialStream;
+    SerialStream serialStream;
 
     int st = WAIT_BEGIN;
     int readIndex = 0;

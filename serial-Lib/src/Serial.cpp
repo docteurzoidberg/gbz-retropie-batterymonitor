@@ -2,27 +2,57 @@
 #include "Serial.h"
 
 
-Serial::Serial() {}
-  
-bool Serial::open (std::string path) {
-    if (!serialStream) return false;
-    try{
-        serialStream.open(path, std::ifstream::in | std::ifstream::binary);
-        return true;
-    }
-    catch(std::exception const& e) {
-        
-    }
-    return false;
+Serial::Serial() {
+    st = WAIT_BEGIN;
+    readIndex = 0;
+    headerIndex = 0;
+    bufferIndex = 0;    
+    packetLen = 0;
+    packetType = 0;
+    packetReady = false;
 }
+  
+bool Serial::open (std::string path, LibSerial::SerialStreamBuf::BaudRateEnum baudRate) {
+    
+    if (!serialStream) 
+        return false;
+
+    serialStream.Open(path);
+
+    if (!serialStream.good() ) 
+    {
+        //could not open serial port
+        return false;
+    }
+    
+    serialStream.SetBaudRate(baudRate);
+
+    if (!serialStream.good() ) 
+    {
+        //could not set baud rate
+        return false;
+    }
+
+    return true;
+}
+
+bool Serial::open (std::string path) {   
+    return open(path, SerialStreamBuf::BAUD_9600);
+}
+
 
 //lit la stream et rempli le buffer  
 bool Serial::processData() {
+    
     char byte;   
-    while((byte = serialStream.get()) != EOF) {
-        //read stream et regarde si data apres
+
+    while( serialStream.rdbuf()->in_avail() > 0 ) 
+    {
+        serialStream.get(byte);
         _compute(byte);
+        usleep(100);
     }
+
     return packetReady;
 }  
 
@@ -44,7 +74,7 @@ bool Serial::isPacketReady() { return packetReady; }
 int Serial::getPacketLen() { return packetReady ? packetLen : -1; }
 int Serial::getPacketType() { return packetReady ? packetType : -1; }
 
-void Serial::close() { serialStream.close(); }
+void Serial::close() { serialStream.Close(); }
 
 Serial::~Serial() {
     if (serialStream) {

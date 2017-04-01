@@ -1,1 +1,1 @@
-g++ -std=c++11 -o gbz-rpi-battmon gbz-rpi-battmon.cpp debug-Lib/src/Logger.cpp serial-Lib/src/Serial.cpp
+g++ -std=c++11 -o gbz-rpi-battmon debug-Lib/src/Logger.cpp serial-Lib/src/Serial.cpp gbz-rpi-battmon.cpp

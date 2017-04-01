@@ -5,7 +5,6 @@
 
 #include "../../debug-Lib/src/Logger.h"
 
-
 #define HEADER "!PKT" //new version
 #define HEADER_LEN 4
 

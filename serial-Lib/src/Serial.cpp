@@ -10,7 +10,6 @@ Serial::Serial() {
     packetLen = 0;
     packetType = 0;
     packetReady = false;
-    Logger::redirectTo(Logger::All, std::cout);
 }
   
 bool Serial::open (std::string path, LibSerial::SerialStreamBuf::BaudRateEnum baudRate) {

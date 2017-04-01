@@ -143,6 +143,32 @@ void draw_battery(int start_x, int start_y, int fore_colour, int back_colour) {
     }
 }
 
+void process_serial_data() {
+    
+    if(serialLib->processData()==false) {
+        return;
+    }
+        
+    int packetType = serialLib->getPacketType();
+    
+    if(packetType == PACKET_BATTERY_STATUS) {
+
+        //On a un paquet,
+        //serialLib->readBytes(1, &battInfos.percent);     //premiere valeur = % batterie sur de (00 a FF)
+        //serialLib->readBytes(1, &battInfos.charging);    //deuxieme valeur = charge on/off (00 ou FF)
+        //serialLib->readBytes(4, &battInfos.voltage);     //troisieme valeur = float voltage batterie
+
+        //ou directement:
+        serialLib->readBytes(sizeof(battInfos), (char*) &battInfos);
+        return;
+    }
+
+    Logger::error("Unknown packet type.");
+}
+
+
+
+
 // application entry point
 int main(int argc, char* argv[])
 {
@@ -161,8 +187,6 @@ int main(int argc, char* argv[])
         Logger::error("Error opening serial port");
         return(1);
     }
-
-
 
     // Get variable screen information
     if (ioctl(fbfd, FBIOGET_VSCREENINFO, &vinfo)) {
@@ -187,7 +211,7 @@ int main(int argc, char* argv[])
 
     // Get fixed screen information
     if (ioctl(fbfd, FBIOGET_FSCREENINFO, &finfo)) {
-        Logger::error("Error reading fixed information.\n");
+        Logger::error("Error reading fixed information.");
     }
 
     // map fb to user mem 
@@ -200,7 +224,7 @@ int main(int argc, char* argv[])
               0);
 
     if ( (int)(*fbp) == -1) {
-        Logger::error("Failed to mmap.\n");
+        Logger::error("Failed to mmap.");
         return -1;
     }
 
@@ -211,35 +235,14 @@ int main(int argc, char* argv[])
     // inifinite loop
     for(;;) {
 
-        //Serial packet ready ?
-        if(serialLib->processData()) {
-            
-            int packetType = serialLib->getPacketType();
-            if(packetType == PACKET_BATTERY_STATUS) {
-
-                //On a un paquet,
-                int     battPercent =   (int)       *serialLib->readBytes(1);     //premiere valeur = % batterie sur de (00 a FF)
-                bool    battCharging =  (bool)      *serialLib->readBytes(1);         //deuxieme valeur = charge on/off (00 ou FF)
-                float   battVoltage =   (float)     *serialLib->readBytes(4);         //troisieme valeur = float voltage batterie
-
-                /* ou:
-
-                struct BatteryInfoStruct {
-                    uint8_t percent;
-                    bool charging;
-                    float voltage;
-                }
-                BatteryInfoStruct battInfos;
-                battInfos = (battInfos) serialLib.readBytes(sizeof(battInfos));
-                */
-            }
-        }
-
+        //Read serial port until EOF and parse packets if any available
+        process_serial_data();
 
         //TODO: icone batterie en fonction des battInfos...
         draw_battery(batt_start_x, batt_start_y, batt_fore_colour, batt_back_colour);
+
+        //framebuffer resfresh frequency
         usleep(fb_refresh);
-        sleep(1);
     }
 
     return 0;

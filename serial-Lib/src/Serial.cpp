@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <stdexcept>
+#include <cstdint>
 
 #include "../../debug-Lib/src/Logger.h"
 
@@ -40,17 +41,16 @@ public:
   }  
 
   //lit X octet dans le paquet
-  char* readBytes(int len) {
+  bool readBytes(int len, char* obj) {
 
         if (!packetReady) {
             Logger::warning("Packet not ready");
-            return nullptr;
+            return false;
         }
 
-        char bs[len];
-        memcpy(bs, &buffer[readIndex], len);
+        memcpy(obj, &buffer[readIndex], len);
         readIndex+=len; 
-        return bs;
+        return true;
   }
 
   /* getters */

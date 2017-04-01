@@ -6,7 +6,7 @@ public:
      Serial();
      bool open(std::string path);
      bool processData();
-     char * readBytes(int len);
+     bool readBytes(int len, char* obj);
      int getPacketType();
     ~Serial();
 private:

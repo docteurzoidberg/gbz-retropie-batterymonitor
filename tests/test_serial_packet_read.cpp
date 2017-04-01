@@ -1,19 +1,6 @@
-
-
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <signal.h>
-#include <string.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <sys/ioctl.h>
-
 #include "../debug-Lib/src/Logger.h"
 #include "../serial-Lib/src/Serial.h"
-
-#include <iostream>
-
 
 #define PACKET_BATTERY_STATUS 'b'
 

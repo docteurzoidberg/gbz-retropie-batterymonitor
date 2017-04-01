@@ -8,18 +8,10 @@
 #define TAILLE_BUFFER 512
 
 #include <SerialStream.h>
-#include <iostream>
-#include <unistd.h>
-#include <cstdlib>
+#include <cstring>
+#include "../../debug-Lib/src/Logger.h"
 
 using namespace LibSerial;
-
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <cstring>
-
-#include "../../debug-Lib/src/Logger.h"
 
     enum Status {
         WAIT_BEGIN,     //  on attend byte debut

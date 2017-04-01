@@ -1,7 +1,9 @@
 /*
- * grrl_bat_mon.c
+ * DrZoid's  "GBZ-RETROPIE-BATTERY-MONITOR"
  *
- * A bettery monitor for the Adafruit Pocket PiGRRL
+ * A battery monitor for the arduino-based battery monitor for GameBoy zero projects
+ *
+ * Forked from https://github.com/martinohanlon/grrl-bat-monitor to include serial readings from an arduino
  *
  * FRAMEBUFFER DISLAY WORK BASED ON :::
  * http://raspberrycompote.blogspot.ie/2013/03/low-level-graphics-on-raspberry-pi-part.html
@@ -14,17 +16,11 @@
  * Distributed in the hope that this will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *
-
- * Modifié un peu par DrZoid :p
-
  */
 
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
+
+
 #include <signal.h>
-#include <string.h>
 #include <fcntl.h>
 #include <linux/fb.h>
 #include <sys/mman.h>
@@ -33,7 +29,7 @@
 #include "debug-Lib/src/Logger.h"
 #include "serial-Lib/src/Serial.h"
 
-#include <iostream>
+
 
 
 #define PACKET_BATTERY_STATUS 'b'

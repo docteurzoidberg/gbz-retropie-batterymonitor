@@ -4,8 +4,10 @@
 
 #include "../../debug-Lib/Logger.h"
 
-#define BYTE_START '!' 	
-#define PACKET_STOP '\n'
+#define HEADER "!PKT" //new version
+#define HEADER_LEN 4
+
+#define BYTE_END '\n'
 #define TAILLE_BUFFER 512
 
 class Serial {
@@ -73,6 +75,7 @@ private:
 
     bool packetReady = false;
 
+    int headerIndex = 0;
     int bufferIndex = 0;    
     int packetLen = 0;
     int readOffset = 0;
@@ -95,18 +98,28 @@ private:
             st = WAIT_BEGIN;
             packetReady = true;
             readOffset = 0;
+            headerIndex = 0;
             return;
         }
 
         //Byte de degin => passage etat lecture
         if (st == WAIT_BEGIN) {
 
-            if(b != BYTE_START) {
-                Logger::error("Got other byte than begin");
+            if(b != HEADER[headerPos]) {
+                Logger::error("Got other header byte than expected");
+                headerPos=0;
                 return;  //  on reste en begin
             }
 
-            //byte de begin, on passe a READING_LEN
+            //b correspond au header, on avance dedans
+            headerPos++;
+
+            //Si header pas fini, on sort et on attend le prochain.
+            if(headerPos<(HEADER_LEN-1) {
+                return; //on reste en begin
+            }
+           
+            //Fin du header, c'est bon, on passe a READING_LEN !
             st = READING_LEN;
             packetReady = false;
             packetLen = 0;

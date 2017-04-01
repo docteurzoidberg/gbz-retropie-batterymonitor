@@ -207,7 +207,7 @@ int main(int argc, char* argv[])
     // inifinite loop
     for(;;) {
 
-
+        //Serial packet ready ?
         if(serialLib->processData()) {
             
             //On a un paquet,

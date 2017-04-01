@@ -19,7 +19,7 @@ Serial* serialLib = new Serial();
 // called when terminating
 void signal_callback_handler(int signum)
 {
-    Logger::info("Pocket PiGRRL Battery Monitor Finished.");
+    Logger::warning("GBZ Serial Battery Monitor Stopped.");
     exit(signum);
 }
 
@@ -41,9 +41,9 @@ void process_serial_data() {
         //ou directement:
         serialLib->readBytes(sizeof(battInfos), (char*) &battInfos);
 
-		Logger::info(std::to_string(battInfos.percent));
-		Logger::info(std::to_string(battInfos.charging));
-		Logger::info(std::to_string(battInfos.voltage));
+		Logger::log(std::to_string(battInfos.percent));
+		Logger::log(std::to_string(battInfos.charging));
+		Logger::log(std::to_string(battInfos.voltage));
 
         return;
     }
@@ -56,7 +56,7 @@ void process_serial_data() {
 int main(int argc, char* argv[])
 {
     Logger::redirectTo(Logger::All, std::cout);
-    Logger::info("GBZ Serial Battery Monitor Started");
+    Logger::warning("GBZ Serial Battery Monitor Started");
 
     //Open serial protocol lib on arduino serial usb
     if(!serialLib->open("/dev/ttyACM0")) {

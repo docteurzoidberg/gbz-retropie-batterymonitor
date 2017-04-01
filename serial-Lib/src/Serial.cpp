@@ -45,6 +45,8 @@ bool Serial::processData() {
     
     char byte;
     bool bytesRead = false;
+    
+    packetReady = false;
 
     while( serialStream.rdbuf()->in_avail() > 0 ) 
     {
@@ -54,8 +56,6 @@ bool Serial::processData() {
         usleep(100);
     }
 
-    if(!bytesRead) return false;
-
     return packetReady;
 }  
 
@@ -63,12 +63,12 @@ bool Serial::processData() {
 bool Serial::readBytes(int len, char* obj) {
 
     if (!packetReady) {
-        Logger::warning("Packet not ready");
+        Logger::warning("[Serial]: Packet not ready");
         return false;
     }
 
     std::memcpy(obj, &buffer[readIndex], len);
-    readIndex+=len; 
+    readIndex+=len;     
     return true;
 }
 
@@ -91,12 +91,12 @@ void Serial::_compute(char& b) {
     if (st == WAIT_END) {
 
         if(b != BYTE_END) {
-            Logger::error("Got other byte than end");
+            Logger::error("[Serial]: Got other byte than end");
             st = WAIT_BEGIN; //  on recommence
             return;
         }
 
-        Logger::info("Got a packet ! =)");
+        Logger::info("[Serial]: Got a packet ! =)");
 
         st = WAIT_BEGIN;
         packetReady = true;
@@ -109,7 +109,7 @@ void Serial::_compute(char& b) {
     if (st == WAIT_BEGIN) {
 
         if(b != HEADER[headerIndex]) {
-            Logger::error("Got other header byte than expected");
+            Logger::error("[Serial]: Got other header byte than expected");
             headerIndex=0;
             return;  //  on reste en begin
         }
@@ -151,7 +151,7 @@ void Serial::_compute(char& b) {
     if (st == READING_DATA) {
         
         if (bufferIndex == (TAILLE_BUFFER-1)) {
-            Logger::error("Buffer overflow !");
+            Logger::error("[Serial]: Buffer overflow !");
             st = WAIT_BEGIN;
             return;
         }
@@ -169,7 +169,7 @@ void Serial::_compute(char& b) {
     }
 
     //
-    Logger::error("On ne devrait jamais arriver ici");
+    Logger::error("[Serial]: On ne devrait jamais arriver ici");
 }
 
 

@@ -4,10 +4,9 @@
 
 #include "Logger.h"
 
-#define PACKET_START "PCK" 	// 3 octets
-#define PACKET_STOP "\n"		// 1 octet
-#define TAILLE_BUFFER 2048
-
+#define BYTE_START '!' 	
+#define PACKET_STOP '\n'
+#define TAILLE_BUFFER 512
 
 class Serial {
 
@@ -20,26 +19,23 @@ public:
   }
   
   void Serial::open (std::string path) {
- 
- 		if (!serialStream)
-      	throw std::run_time("Already Open !");
-        
-    serialStream.open(path, std::ifstream::in | std::ifstream::binary); // on ouvre en binaire ? => toutafé
-  
+ 	if (!serialStream) {
+      	throw std::run_time("Serial opening error !");
+    }
+    serialStream.open(path, std::ifstream::in | std::ifstream::binary);
   }
     
   //lit la stream et rempli le buffer  
   bool Serial::processData() {
-      char byte;      
+      char byte;   
       while((byte = serialStream.get()) != EOF) {
           //read stream et regarde si data apres
           compute(byte);
       }
-      
-      return package_done;
+      return packetReady;
   }  
-    
-    bool Serial::isPackageDone() { return package_done; }
+
+  bool Serial::isPacketReady() { return packetReady; }
     
   void Serial::close() { serialStream.close(); }
 
@@ -49,72 +45,102 @@ public:
   }
 
 private:
-  enum Status {
-    WAIT_BEGIN, // on attend
-    READING_LEN //  tant que l'on a pas lu la taille
-    READING_DATA //  tant que l'on a pas eu Fin
 
-  };
-  Status st = WAIT_BEGIN;
-    
-  bool package_done = false;
-  
-  int len = 0;
-  int bufferIndex = 0;
-  byte buffer[TAILLE_BUFFER];          //buffer lecture port serie (entete + len + data + fin  tout ce qui est lu sur la stream en fait)
+    enum Status {
+        WAIT_BEGIN,     //  on attend byte debut
+        WAIT_END,       //  taille atteinte, on attend byte fin
+        READING_LEN     //  tant que l'on a pas lu la taille
+        READING_DATA    //  tant que l'on a pas eu Fin
+    };
 
-    // PROTO : <BEGIN> <DATALEN> <DATA> <END> (end facultatif en fait, mais pourra servir de checksum plus tard)
+    Status st = WAIT_BEGIN;
+
+    bool packetReady = false;
+    int len = 0;
+    int bufferIndex = 0;
+    byte buffer[TAILLE_BUFFER];
+
+   
     int readOffset = 0;
-    byte[]* getData(int size) {
-        // [0, 1, 2, 3, 4] comme ça on dit si on veut que [2, 3] par exmeple
-        if (!package_done)
-            Logger::warning("Can't recover data");
+
+    byte[]* readBytes(int size) {
+
+        if (!packetReady)
+            Logger::warning("Packet not ready");
             return nullptr;
         }
+
         byte[size] bs;
-        memcpy(bs, &buffer[readOffset], size * sizeof(byte)); // vraiment pas sur de mon coup mais je crois que c'est bon
-        readOffset+=size; // ah oui ^^ (derniers efforts du cerveau ^^) x)
+        memcpy(bs, &buffer[readOffset], size);
+        readOffset+=size; 
         return bs;
     }
-    
+
     void compute(char& b) {
-        //Byte de degin = etat lecture
-        if (st == WAIT_BEGIN && b == '!') {
-            st = READING_LEN;
-            package_done = false;
-            len = 0;
-            bufferIndex=0;
+
+        //Byte de end '\n' et WAIT_END => validation du paquet, et passage etat WAIT_BEGIN
+        if (st == WAIT_END) {
+
+            if(b != BYTE_END) {
+                Logger::error("Got other byte than end");
+                st = WAIT_BEGIN; //  on recommence
+                return;
+            }
+
+            Logger::info("Got a packet ! =)");
+
+            st = WAIT_BEGIN;
+            packetReady = true;
             readOffset = 0;
             return;
         }
-        else if (st == READING_LEN) {
+
+        //Byte de degin => passage etat lecture
+        if (st == WAIT_BEGIN) {
+
+            if(b != BYTE_START) {
+                Logger::error("Got other byte than begin");
+                return;  //  on reste en begin
+            }
+
+            //byte de begin, on passe a READING_LEN
+            st = READING_LEN;
+            packetReady = false;
+            len = 0;
+            bufferIndex=0;
+            return;
+        }
+
+        //Etat "READING_LEN", on lit la taille dans len
+        if (st == READING_LEN) {
+            //on lit et passe a READING_DATA
             st = READING_DATA;
             len = (int)b;
+            return;
         }
-        // Tant que read data et len pas depassé
-        else if (st == READING_DATA && len == 0 && b == '\n' /* end ? */) {
-            st = WAIT_BEGIN;
-            package_done = true;
-            readOffset=0;
-            // consrtuire paquet à l'aide du buffer ?
-            
-            
-        }
-        else if (st == READING_DATA && len == 0) { // ERROR (quel statut ?)
-            Logger::error("End of data, need a END token");
-            st = WAIT_BEGIN; //  on recommence
-            package_done = false; // au cas ou
-        }
-        else if (st == READING_DATA) {
-            len--;
+
+        //Si etat lecture
+        if (st == READING_DATA) {
             
             if (bufferIndex == (TAILLE_BUFFER-1)) {
                 Logger::error("Buffer overflow !");
                 st = WAIT_BEGIN;
                 return;
             }
+
             buffer[bufferIndex++] = b;
+            len--;  
+
+            //Len atteinte ? on passe a WAIT_END
+            if(len==0) {
+                st = WAIT_END;                
+            }
+          
+            return; //sinon on reste en READING_DATA
         }
+
+        //
+        Logger::error("On ne devrait jamais arriver ici");
     }
 
 };

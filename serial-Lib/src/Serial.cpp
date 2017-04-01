@@ -47,14 +47,15 @@ public:
         }
 
         char bs[len];
-        memcpy(bs, &buffer[readOffset], len);
-        readOffset+=len; 
+        memcpy(bs, &buffer[readIndex], len);
+        readIndex+=len; 
         return bs;
   }
 
-
+  /* getters */
   bool isPacketReady() { return packetReady; }
-  int getPacketLen() { return packetLen; }
+  int getPacketLen() { return packetReady ? packetLen : -1; }
+  int getPacketType() { return packetReady ? packetType : -1; }
     
   void close() { serialStream.close(); }
 
@@ -68,18 +69,20 @@ private:
     enum Status {
         WAIT_BEGIN,     //  on attend byte debut
         WAIT_END,       //  taille atteinte, on attend byte fin
-        READING_LEN,     //  tant que l'on a pas lu la taille
+        READING_TYPE,   //  tant que l'on a pas lu le type
+        READING_LEN,    //  tant que l'on a pas lu la taille
         READING_DATA    //  tant que l'on a pas eu Fin
     };
 
     int st = WAIT_BEGIN;
 
-    bool packetReady = false;
-
+    int readIndex = 0;
     int headerIndex = 0;
     int bufferIndex = 0;    
+
     int packetLen = 0;
-    int readOffset = 0;
+    int packetType = 0;
+    bool packetReady = false;
 
     char buffer[TAILLE_BUFFER];
    
@@ -98,7 +101,7 @@ private:
 
             st = WAIT_BEGIN;
             packetReady = true;
-            readOffset = 0;
+            readIndex = 0;
             headerIndex = 0;
             return;
         }
@@ -120,11 +123,20 @@ private:
                 return; //on reste en begin
             }
            
-            //Fin du header, c'est bon, on passe a READING_LEN !
-            st = READING_LEN;
+            //Fin du header, c'est bon, on passe a READING_TYPE !
+            st = READING_TYPE;
             packetReady = false;
             packetLen = 0;
+            packetType = 0;
             bufferIndex = 0;
+            return;
+        }
+
+        //Etat "READING_TYPE", on lit le type dans packetType
+        if (st == READING_TYPE) {
+            //on lit le type, et passe a READING_LEN
+            st = READING_LEN;
+            packetType = (int)b;
             return;
         }
 

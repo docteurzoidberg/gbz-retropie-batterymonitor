@@ -35,6 +35,10 @@
 
 #include <iostream>
 
+
+#define PACKET_BATTERY_STATUS 'b'
+
+
 // 'global' variables to store screen info
 char *fbp = 0;
 struct fb_var_screeninfo vinfo;
@@ -210,21 +214,25 @@ int main(int argc, char* argv[])
         //Serial packet ready ?
         if(serialLib->processData()) {
             
-            //On a un paquet,
-            int     battPercent =   (int)       serialLib->readBytes(1);     //premiere valeur = % batterie sur de (00 a FF)
-            bool    battCharging =  (bool)      serialLib->readBytes(1);         //deuxieme valeur = charge on/off (00 ou FF)
-            float   battVoltage =   (float)     serialLib->readBytes(4);         //troisieme valeur = float voltage batterie
+            int packetType = serialLib.getPacketType();
+            if(packetType == PACKET_BATTERY_STATUS) {
 
-            /* ou:
+                //On a un paquet,
+                int     battPercent =   (int)       serialLib->readBytes(1);     //premiere valeur = % batterie sur de (00 a FF)
+                bool    battCharging =  (bool)      serialLib->readBytes(1);         //deuxieme valeur = charge on/off (00 ou FF)
+                float   battVoltage =   (float)     serialLib->readBytes(4);         //troisieme valeur = float voltage batterie
 
-            struct BatteryInfoStruct {
-                uint8_t percent;
-                bool charging;
-                float voltage;
+                /* ou:
+
+                struct BatteryInfoStruct {
+                    uint8_t percent;
+                    bool charging;
+                    float voltage;
+                }
+                BatteryInfoStruct battInfos;
+                battInfos = (battInfos) serialLib.readBytes(sizeof(battInfos));
+                */
             }
-            BatteryInfoStruct battInfos;
-            battInfos = (battInfos) serialLib.readBytes(sizeof(battInfos));
-            */
         }
 
 

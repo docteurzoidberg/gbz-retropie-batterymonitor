@@ -1,5 +1,5 @@
 #Format des paquets                                 
-    "!PKT" (4) + $LEN (1) + $DATA ($LEN) + '\n' (1)
+    "!PKT" (4) + $TYPE (1) + $LEN (1) + $DATA ($LEN) + '\n' (1)
 
 #Utilisation
 
@@ -15,9 +15,9 @@
     if(serialLib->processData()) {
         
         //On a un paquet,
-        int     battPercent =   (int)       serialLib->readBytes(1);     //premiere valeur = % batterie sur de (00 a FF)
-        bool    battCharging =  (bool)      serialLib->readBytes(1);         //deuxieme valeur = charge on/off (00 ou FF)
-        float   battVoltage =   (float)     serialLib->readBytes(4);         //troisieme valeur = float voltage batterie
+        int     battPercent =   (int)       serialLib->readBytes(1);        //premiere valeur = % batterie sur de (00 a FF)
+        bool    battCharging =  (bool)      serialLib->readBytes(1);        //deuxieme valeur = charge on/off (00 ou FF)
+        float   battVoltage =   (float)     serialLib->readBytes(4);        //troisieme valeur = float voltage batterie
 
         /* ou:
 

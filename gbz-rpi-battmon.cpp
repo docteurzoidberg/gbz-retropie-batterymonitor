@@ -15,6 +15,9 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
+
+ * Modifié un peu par DrZoid :p
+
  */
 
 #include <unistd.h>
@@ -66,20 +69,20 @@ int batt_icon [20][35] = {
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
+//DrZoid: TODO: Dynamic icon =)
+
+
 int batt_start_x = 10;
 int batt_start_y = 10;
 int batt_fore_colour = 65535;
 int batt_back_colour = 0;
 
-// seconds between checks of the low battery output
-// int lbo_refresh = 1;
 // refresh rate of the framebuffer
 int fb_refresh = 10000;
 
-// GPIO pin the low battery output connects too
-//int lbo_gpio = 19;
 
 
+// DrZoid: battery infos from serial
 struct BatteryInfoStruct {
     uint8_t percent;
     bool charging;
@@ -87,6 +90,7 @@ struct BatteryInfoStruct {
 }
 
 BatteryInfoStruct battInfos;
+
 
 // called when terminating
 void signal_callback_handler(int signum)
@@ -189,12 +193,9 @@ int main(int argc, char* argv[])
     signal(SIGINT, signal_callback_handler);
     signal(SIGTERM, signal_callback_handler);
 
-    
-   
-
     // inifinite loop
     for(;;) {
-	// draw battery icon
+
 
         if(serialLib.processData()) {
             
@@ -211,13 +212,12 @@ int main(int argc, char* argv[])
                 float voltage;
             }
             BatteryInfoStruct battInfos;
-            memcpy(&battInfos, serialLib.readBytes(sizeof(battInfos));
+            battInfos = (battInfos) serialLib.readBytes(sizeof(battInfos));
             */
         }
 
 
-
-
+        //TODO: icone batterie en fonction des battInfos...
         draw_battery(batt_start_x, batt_start_y, batt_fore_colour, batt_back_colour);
         usleep(fb_refresh);
         sleep(1);

@@ -8,6 +8,8 @@ public:
      bool processData();
      char * readBytes(int len);
     ~Serial();
+private:
+     void compute(char &b);    
 };
 
 #endif

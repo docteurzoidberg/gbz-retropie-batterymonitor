@@ -2,7 +2,8 @@
 #include <fstream>
 #include <string>
 
-#include "../../debug-Lib/Logger.h"
+#include "../../debug-Lib/src/Logger.h"
+
 
 #define HEADER "!PKT" //new version
 #define HEADER_LEN 4
@@ -16,11 +17,11 @@ public:
   
   std::ifstream serialStream;
   
-  Serial::Serial() {
+  Serial() {
     
   }
   
-  bool Serial::open (std::string path) {
+  bool open (std::string path) {
  	if (!serialStream) {
       	throw std::run_time("Serial opening error !");
     }
@@ -28,7 +29,7 @@ public:
   }
     
   //lit la stream et rempli le buffer  
-  bool Serial::processData() {
+  bool processData() {
       char byte;   
       while((byte = serialStream.get()) != EOF) {
           //read stream et regarde si data apres
@@ -38,26 +39,26 @@ public:
   }  
 
   //lit X octet dans le paquet
-  char[]* Serial::readBytes(int len) {
+  char* readBytes(int len) {
 
-        if (!packetReady)
+        if (!packetReady) {
             Logger::warning("Packet not ready");
             return nullptr;
         }
 
-        char[len] bs;
+        char bs[len];
         memcpy(bs, &buffer[readOffset], len);
         readOffset+=len; 
         return bs;
   }
 
 
-  bool Serial::isPacketReady() { return packetReady; }
-  int Serial::getPacketLen() { return packetLen; }
+  bool isPacketReady() { return packetReady; }
+  int getPacketLen() { return packetLen; }
     
-  void Serial::close() { serialStream.close(); }
+  void close() { serialStream.close(); }
 
-  Serial::~Serial() {
+  ~Serial() {
   	if (serialStream)
       	close();
   }
@@ -67,11 +68,11 @@ private:
     enum Status {
         WAIT_BEGIN,     //  on attend byte debut
         WAIT_END,       //  taille atteinte, on attend byte fin
-        READING_LEN     //  tant que l'on a pas lu la taille
+        READING_LEN,     //  tant que l'on a pas lu la taille
         READING_DATA    //  tant que l'on a pas eu Fin
     };
 
-    Status st = WAIT_BEGIN;
+    int st = WAIT_BEGIN;
 
     bool packetReady = false;
 
@@ -105,17 +106,17 @@ private:
         //Byte de degin => passage etat lecture
         if (st == WAIT_BEGIN) {
 
-            if(b != HEADER[headerPos]) {
+            if(b != HEADER[headerIndex]) {
                 Logger::error("Got other header byte than expected");
-                headerPos=0;
+                headerIndex=0;
                 return;  //  on reste en begin
             }
 
             //b correspond au header, on avance dedans
-            headerPos++;
+            headerIndex++;
 
             //Si header pas fini, on sort et on attend le prochain.
-            if(headerPos<(HEADER_LEN-1) {
+            if(headerIndex < HEADER_LEN) {
                 return; //on reste en begin
             }
            

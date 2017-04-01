@@ -1,3 +1,6 @@
 [submodule "debug-Lib"]
 	path = debug-Lib
 	url = git@github.com:docteurzoidberg/debug-Lib
+[submodule "libserial"]
+	path = libserial
+	url = https://github.com/crayzeewulf/libserial.git

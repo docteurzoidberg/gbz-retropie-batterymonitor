@@ -214,13 +214,13 @@ int main(int argc, char* argv[])
         //Serial packet ready ?
         if(serialLib->processData()) {
             
-            int packetType = serialLib.getPacketType();
+            int packetType = serialLib->getPacketType();
             if(packetType == PACKET_BATTERY_STATUS) {
 
                 //On a un paquet,
-                int     battPercent =   (int)       serialLib->readBytes(1);     //premiere valeur = % batterie sur de (00 a FF)
-                bool    battCharging =  (bool)      serialLib->readBytes(1);         //deuxieme valeur = charge on/off (00 ou FF)
-                float   battVoltage =   (float)     serialLib->readBytes(4);         //troisieme valeur = float voltage batterie
+                int     battPercent =   (int)       *serialLib->readBytes(1);     //premiere valeur = % batterie sur de (00 a FF)
+                bool    battCharging =  (bool)      *serialLib->readBytes(1);         //deuxieme valeur = charge on/off (00 ou FF)
+                float   battVoltage =   (float)     *serialLib->readBytes(4);         //troisieme valeur = float voltage batterie
 
                 /* ou:
 

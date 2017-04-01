@@ -79,6 +79,15 @@ int fb_refresh = 10000;
 // GPIO pin the low battery output connects too
 //int lbo_gpio = 19;
 
+
+struct BatteryInfoStruct {
+    uint8_t percent;
+    bool charging;
+    float voltage;
+}
+
+BatteryInfoStruct battInfos;
+
 // called when terminating
 void signal_callback_handler(int signum)
 {
@@ -180,11 +189,35 @@ int main(int argc, char* argv[])
     signal(SIGINT, signal_callback_handler);
     signal(SIGTERM, signal_callback_handler);
 
-    //TODO: drzoid:  serialloop
+    
+   
 
     // inifinite loop
     for(;;) {
 	// draw battery icon
+
+        if(serialLib.processData()) {
+            
+            //On a un paquet,
+            uint8_t battPercent = (uint8_t) serialLib.readBytes(1);     //premiere valeur = % batterie sur de (00 a FF)
+            bool  battCharging = (bool) serialLib.readBytes(1);         //deuxieme valeur = charge on/off (00 ou FF)
+            float battVoltage = (float) serialLib.readBytes(4);         //troisieme valeur = float voltage batterie
+
+            /* ou:
+
+            struct BatteryInfoStruct {
+                uint8_t percent;
+                bool charging;
+                float voltage;
+            }
+            BatteryInfoStruct battInfos;
+            memcpy(&battInfos, serialLib.readBytes(sizeof(battInfos));
+            */
+        }
+
+
+
+
         draw_battery(batt_start_x, batt_start_y, batt_fore_colour, batt_back_colour);
         usleep(fb_refresh);
         sleep(1);

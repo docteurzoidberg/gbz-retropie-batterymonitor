@@ -1,0 +1,6 @@
+.gitignore
+.vscode/
+*.o
+gbz-rpi-battmon
+wiringPi/
+test_serial_packet_read

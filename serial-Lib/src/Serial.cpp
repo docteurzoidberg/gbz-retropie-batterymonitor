@@ -10,18 +10,17 @@ Serial::Serial() {
     packetLen = 0;
     packetType = 0;
     packetReady = false;
+    Logger::redirectTo(Logger::All, std::cout);
 }
   
 bool Serial::open (std::string path, LibSerial::SerialStreamBuf::BaudRateEnum baudRate) {
     
-    if (!serialStream) 
-        return false;
-
     serialStream.Open(path);
 
     if (!serialStream.good() ) 
     {
         //could not open serial port
+        Logger::warning("[Serial]: could not open serial port");
         return false;
     }
     
@@ -30,6 +29,7 @@ bool Serial::open (std::string path, LibSerial::SerialStreamBuf::BaudRateEnum ba
     if (!serialStream.good() ) 
     {
         //could not set baud rate
+        Logger::warning("[Serial]: could not set baud rate");
         return false;
     }
 

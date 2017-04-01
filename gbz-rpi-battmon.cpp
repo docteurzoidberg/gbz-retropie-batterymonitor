@@ -163,6 +163,11 @@ void process_serial_data() {
 
         //ou directement:
         serialLib->readBytes(sizeof(battInfos), (char*) &battInfos);
+
+	    Logger::log(std::to_string(battInfos.percent));
+		Logger::log(std::to_string(battInfos.charging));
+		Logger::log(std::to_string(battInfos.voltage));
+
         return;
     }
 

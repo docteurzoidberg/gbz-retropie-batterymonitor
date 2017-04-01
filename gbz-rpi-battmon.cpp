@@ -103,7 +103,6 @@ Serial* serialLib = new Serial();
 // called when terminating
 void signal_callback_handler(int signum)
 {
-
     // cleanup
     // unmap fb file from memory
     munmap(fbp, screensize);
@@ -115,8 +114,8 @@ void signal_callback_handler(int signum)
     
     // close fb file
     close(fbfd);
-    Logger::info("Pocket PiGRRL Battery Monitor Finished.");
 
+    Logger::info("GBZ Serial Battery Monitor Finished.");
     exit(signum);
 }
 
@@ -195,7 +194,7 @@ int main(int argc, char* argv[])
     Logger::info("GBZ Serial Battery Monitor Started");
 
     // Open the framebuffer file for reading and writing
-    fbfd = open("/dev/fb1", O_RDWR);
+    fbfd = open("/dev/fb0", O_RDWR);
     if (fbfd == -1) {
         Logger::error("Cannot open framebuffer device.");
         return(1);
@@ -213,11 +212,10 @@ int main(int argc, char* argv[])
     }
 
     //DEBUG info from framebuffer
-    /*
-    printf("Original %dx%d, %dbpp\n", 
-            vinfo.xres, vinfo.yres, 
-            vinfo.bits_per_pixel );
-    */
+    
+    //sprintf(msg, "Original %dx%d, %dbpp\n", vinfo.xres, vinfo.yres, vinfo.bits_per_pixel );
+    Logger::info("Framebuffer is " + std::to_string(vinfo.xres) + "x" +  std::to_string(vinfo.yres) + ", " + std::to_string(vinfo.bits_per_pixel) + "bpp");
+
 
     // Store for reset (copy vinfo to vinfo_orig)
     memcpy(&orig_vinfo, &vinfo, sizeof(struct fb_var_screeninfo));

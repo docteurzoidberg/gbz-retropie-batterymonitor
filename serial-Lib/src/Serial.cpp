@@ -44,14 +44,18 @@ bool Serial::open (std::string path) {
 //lit la stream et rempli le buffer  
 bool Serial::processData() {
     
-    char byte;   
+    char byte;
+    bool bytesRead = false;
 
     while( serialStream.rdbuf()->in_avail() > 0 ) 
     {
         serialStream.get(byte);
         _compute(byte);
+        bytesRead = true;
         usleep(100);
     }
+
+    if(!bytesRead) return false;
 
     return packetReady;
 }  

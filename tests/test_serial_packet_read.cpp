@@ -47,12 +47,17 @@ void process_serial_data() {
     if(packetType == PACKET_BATTERY_STATUS) {
 
         //On a un paquet,
-        //serialLib->readBytes(1, &battInfos.percent);     //premiere valeur = % batterie sur de (00 a FF)
-        //serialLib->readBytes(1, &battInfos.charging);    //deuxieme valeur = charge on/off (00 ou FF)
-        //serialLib->readBytes(4, &battInfos.voltage);     //troisieme valeur = float voltage batterie
+        serialLib->readBytes(1, (char*) &battInfos.percent);     //premiere valeur = % batterie sur de (00 a FF)
+        serialLib->readBytes(1, (char*) &battInfos.charging);    //deuxieme valeur = charge on/off (00 ou FF)
+        serialLib->readBytes(4, (char*) &battInfos.voltage);     //troisieme valeur = float voltage batterie
 
         //ou directement:
-        serialLib->readBytes(sizeof(battInfos), (char*) &battInfos);
+        //serialLib->readBytes(sizeof(battInfos), (char*) &battInfos);
+
+		Logger::info(std::to_string(battInfos.percent));
+		Logger::info(std::to_string(battInfos.charging));
+		Logger::info(std::to_string(battInfos.voltage));
+
         return;
     }
 
@@ -79,6 +84,9 @@ int main(int argc, char* argv[])
     // inifinite loop
     for(;;) {
         process_serial_data();
+
+
+
         usleep(100);
     }
 

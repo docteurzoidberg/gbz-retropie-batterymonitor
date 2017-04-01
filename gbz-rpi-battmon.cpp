@@ -84,12 +84,15 @@ int fb_refresh = 10000;
 
 // DrZoid: battery infos from serial
 struct BatteryInfoStruct {
+    BatteryInfoStruct() : percent(0), charging(false), voltage(.0f) {}
     uint8_t percent;
     bool charging;
-    float voltage;
-}
+    float voltage;    
+};
 
-BatteryInfoStruct battInfos;
+BatteryInfoStruct battInfos = {};
+Serial* serialLib = new Serial();
+
 
 
 // called when terminating
@@ -149,6 +152,14 @@ int main(int argc, char* argv[])
         return(1);
     }
 
+    //Open serial protocol lib on arduino serial usb
+    if(!serialLib->open("/dev/ttyACM0")) {
+        Logger::error("Error opening serial port");
+        return(1);
+    }
+
+
+
     // Get variable screen information
     if (ioctl(fbfd, FBIOGET_VSCREENINFO, &vinfo)) {
         Logger::error("Error reading variable information.");
@@ -197,12 +208,12 @@ int main(int argc, char* argv[])
     for(;;) {
 
 
-        if(serialLib.processData()) {
+        if(serialLib->processData()) {
             
             //On a un paquet,
-            uint8_t battPercent = (uint8_t) serialLib.readBytes(1);     //premiere valeur = % batterie sur de (00 a FF)
-            bool  battCharging = (bool) serialLib.readBytes(1);         //deuxieme valeur = charge on/off (00 ou FF)
-            float battVoltage = (float) serialLib.readBytes(4);         //troisieme valeur = float voltage batterie
+            int     battPercent =   (int)       serialLib->readBytes(1);     //premiere valeur = % batterie sur de (00 a FF)
+            bool    battCharging =  (bool)      serialLib->readBytes(1);         //deuxieme valeur = charge on/off (00 ou FF)
+            float   battVoltage =   (float)     serialLib->readBytes(4);         //troisieme valeur = float voltage batterie
 
             /* ou:
 

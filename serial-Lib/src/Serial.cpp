@@ -13,16 +13,16 @@ class Serial {
 public:
   
   std::ifstream serialStream;
-
-  Serial::Serial(std::string path) {
-   
+  
+  Serial::Serial() {
+    
   }
   
-  void Serial::open (std::string path) {
+  bool Serial::open (std::string path) {
  	if (!serialStream) {
       	throw std::run_time("Serial opening error !");
     }
-    serialStream.open(path, std::ifstream::in | std::ifstream::binary);
+    return serialStream.open(path, std::ifstream::in | std::ifstream::binary);
   }
     
   //lit la stream et rempli le buffer  
@@ -35,7 +35,23 @@ public:
       return packetReady;
   }  
 
+  //lit X octet dans le paquet
+  char[]* Serial::readBytes(int len) {
+
+        if (!packetReady)
+            Logger::warning("Packet not ready");
+            return nullptr;
+        }
+
+        char[len] bs;
+        memcpy(bs, &buffer[readOffset], len);
+        readOffset+=len; 
+        return bs;
+  }
+
+
   bool Serial::isPacketReady() { return packetReady; }
+  int Serial::getPacketLen() { return packetLen; }
     
   void Serial::close() { serialStream.close(); }
 
@@ -56,26 +72,13 @@ private:
     Status st = WAIT_BEGIN;
 
     bool packetReady = false;
-    int len = 0;
-    int bufferIndex = 0;
-    byte buffer[TAILLE_BUFFER];
 
-   
+    int bufferIndex = 0;    
+    int packetLen = 0;
     int readOffset = 0;
 
-    byte[]* readBytes(int size) {
-
-        if (!packetReady)
-            Logger::warning("Packet not ready");
-            return nullptr;
-        }
-
-        byte[size] bs;
-        memcpy(bs, &buffer[readOffset], size);
-        readOffset+=size; 
-        return bs;
-    }
-
+    char buffer[TAILLE_BUFFER];
+   
     void compute(char& b) {
 
         //Byte de end '\n' et WAIT_END => validation du paquet, et passage etat WAIT_BEGIN
@@ -106,8 +109,8 @@ private:
             //byte de begin, on passe a READING_LEN
             st = READING_LEN;
             packetReady = false;
-            len = 0;
-            bufferIndex=0;
+            packetLen = 0;
+            bufferIndex = 0;
             return;
         }
 
@@ -115,7 +118,7 @@ private:
         if (st == READING_LEN) {
             //on lit et passe a READING_DATA
             st = READING_DATA;
-            len = (int)b;
+            packetLen = (int)b;
             return;
         }
 
@@ -129,7 +132,8 @@ private:
             }
 
             buffer[bufferIndex++] = b;
-            len--;  
+
+            int len = packetLen - bufferIndex;
 
             //Len atteinte ? on passe a WAIT_END
             if(len==0) {

@@ -3,15 +3,11 @@
 
 class Serial {
 public:
-
-private:
-    Serial(Serial const&) = delete;
-    void operator=(Serial const&) = delete;
-    static Serial& get();
-
-     Serial(std::ostream& os);
+     Serial();
+     bool open(std::string path);
+     bool processData();
+     char * readBytes(int len);
     ~Serial();
-
 };
 
 #endif

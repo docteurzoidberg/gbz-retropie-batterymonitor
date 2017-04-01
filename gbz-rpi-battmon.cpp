@@ -73,8 +73,14 @@ int batt_icon [20][35] = {
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
-//DrZoid: TODO: Dynamic icon =)
 
+
+//DrZoid: Dynamic icon =)
+int batt_icon_level_start_col = 6;
+int batt_icon_level_start_row = 6;
+int batt_icon_level_end_col = 24;
+int batt_icon_level_end_row = 13;
+//-
 
 int batt_start_x = 10;
 int batt_start_y = 10;
@@ -96,7 +102,6 @@ struct BatteryInfoStruct {
 
 BatteryInfoStruct battInfos = {};
 Serial* serialLib = new Serial();
-
 
 
 // called when terminating
@@ -143,8 +148,9 @@ void draw_battery(int start_x, int start_y, int fore_colour, int back_colour) {
     }
 }
 
+
 void process_serial_data() {
-    
+
     if(serialLib->processData()==false) {
         return;
     }
@@ -166,6 +172,21 @@ void process_serial_data() {
     Logger::error("Unknown packet type.");
 }
 
+
+// Draw into central piece of battery icon
+void build_icon() {
+
+    //largeur = (batt_icon_level_end_col-batt_icon_level_start_col) * battPercent ?
+    int w = (batt_icon_level_end_col-batt_icon_level_start_col) * battInfos.percent;
+
+    for(int r=batt_icon_level_start_row;r<=batt_icon_level_end_row;r++) {
+        for(int c=batt_icon_level_start_col;c<=batt_icon_level_end_col;c++) {
+            int cur = (c-batt_icon_level_start_col);
+            batt_icon[r][c] = ( c <= w ? 1 : 0 );
+        }
+    }
+
+}
 
 
 
@@ -237,6 +258,8 @@ int main(int argc, char* argv[])
 
         //Read serial port until EOF and parse packets if any available
         process_serial_data();
+
+        build_icon();
 
         //TODO: icone batterie en fonction des battInfos...
         draw_battery(batt_start_x, batt_start_y, batt_fore_colour, batt_back_colour);

@@ -1,1 +1,4 @@
 	
+[submodule "debug-Lib"]
+	path = debug-Lib
+	url = https://github.com/Hazurl/debug-Lib.git

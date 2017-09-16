@@ -111,7 +111,7 @@ void signal_callback_handler(int signum)
     if (ioctl(fbfd, FBIOPUT_VSCREENINFO, &orig_vinfo)) {
         Logger::error("Error re-setting variable information.");
     }
-    
+
     // close fb file
     close(fbfd);
 
@@ -151,9 +151,9 @@ void process_serial_data() {
     if(serialLib->processData()==false) {
         return;
     }
-        
+
     int packetType = serialLib->getPacketType();
-    
+
     if(packetType == PACKET_BATTERY_STATUS) {
 
         //On a un paquet,
@@ -195,7 +195,7 @@ void build_icon() {
 // application entry point
 int main(int argc, char* argv[])
 {
-    Logger::redirectTo(Logger::All, std::cout);
+    //Logger::redirectTo(Logger::All, std::cout);
     Logger::info("GBZ Serial Battery Monitor Started");
 
     // Open the framebuffer file for reading and writing
@@ -217,7 +217,7 @@ int main(int argc, char* argv[])
     }
 
     //DEBUG info from framebuffer
-    
+
     //sprintf(msg, "Original %dx%d, %dbpp\n", vinfo.xres, vinfo.yres, vinfo.bits_per_pixel );
     Logger::info("Framebuffer is " + std::to_string(vinfo.xres) + "x" +  std::to_string(vinfo.yres) + ", " + std::to_string(vinfo.bits_per_pixel) + "bpp");
 
